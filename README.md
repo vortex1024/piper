@@ -1,6 +1,7 @@
 ![Piper logo](etc/logo.png)
 
 A fast, local neural text to speech system that sounds great and is optimized for the Raspberry Pi 4.
+Piper is used in a [variety of projects](#people-using-piper).
 
 ``` sh
 echo 'Welcome to the world of speech synthesis!' | \
@@ -9,15 +10,15 @@ echo 'Welcome to the world of speech synthesis!' | \
 
 [Listen to voice samples](https://rhasspy.github.io/piper-samples) and check out a [video tutorial by Thorsten Müller](https://youtu.be/rjq5eZoWWSo)
 
+[![Sponsored by Nabu Casa](etc/nabu_casa_sponsored.png)](https://nabucasa.com)
+
 Voices are trained with [VITS](https://github.com/jaywalnut310/vits/) and exported to the [onnxruntime](https://onnxruntime.ai/).
 
 ## Voices
 
 Our goal is to support Home Assistant and the [Year of Voice](https://www.home-assistant.io/blog/2022/12/20/year-of-voice/).
 
-Download voices from [the release](https://github.com/rhasspy/piper/releases/tag/v0.0.2).
-
-Supported languages:
+[Download voices](https://github.com/rhasspy/piper/releases/tag/v0.0.2) for the supported languages:
 
 * Catalan (ca)
 * Danish (da)
@@ -28,6 +29,7 @@ Supported languages:
 * Finnish (fi)
 * French (fr)
 * Greek (el-gr)
+* Icelandic (is)
 * Italian (it)
 * Kazakh (kk)
 * Nepali (ne)
@@ -35,6 +37,8 @@ Supported languages:
 * Norwegian (no)
 * Polish (pl)
 * Brazilian Portuguese (pt-br)
+* Russian (ru)
+* Swedish (sv-se)
 * Ukrainian (uk)
 * Vietnamese (vi)
 * Chinese (zh-cn)
@@ -44,13 +48,13 @@ Supported languages:
 
 Download a release:
 
-* [amd64](https://github.com/rhasspy/piper/releases/download/v0.0.2/piper_amd64.tar.gz) (desktop Linux)
-* [arm64](https://github.com/rhasspy/piper/releases/download/v0.0.2/piper_arm64.tar.gz) (Raspberry Pi 4)
+* [amd64](https://github.com/rhasspy/piper/releases/download/v1.0.0/piper_amd64.tar.gz) (64-bit desktop Linux)
+* [arm64](https://github.com/rhasspy/piper/releases/download/v1.0.0/piper_arm64.tar.gz) (64-bit Raspberry Pi 4)
+* [armv7](https://github.com/rhasspy/piper/releases/download/v1.0.0/piper_armv7.tar.gz) (32-bit Raspberry Pi 3/4)
 
-If you want to build from source, see the [Makefile](Makefile) and [C++ source](src/cpp). Piper depends on a patched `espeak-ng` in [lib](lib), which includes a way to get access to the "terminator" used to end each clause/sentence.
-
-The ONNX runtime is expected in `lib/Linux-$(uname -m)`, so `lib/Linux-x86_64`, etc. You can change this path in `src/cpp/CMakeLists.txt` if necessary.
-Last tested with [onnxruntime](https://github.com/microsoft/onnxruntime) 1.14.1.
+If you want to build from source, see the [Makefile](Makefile) and [C++ source](src/cpp).
+You must download and extract [piper-phonemize](https://github.com/rhasspy/piper-phonemize) to `lib/Linux-$(uname -m)/piper_phonemize` before building.
+For example, `lib/Linux-x86_64/piper_phonemize/lib/libpiper_phonemize.so` should exist for AMD/Intel machines (as well as everything else from `libpiper_phonemize-amd64.tar.gz`).
 
 
 ## Usage
@@ -62,7 +66,7 @@ For example:
 
 ``` sh
 echo 'Welcome to the world of speech synthesis!' | \
-  ./piper --model blizzard_lessac-medium.onnx --output_file welcome.wav
+  ./piper --model en-us-lessac-medium.onnx --output_file welcome.wav
 ```
 
 For multi-speaker models, use `--speaker <number>` to change speakers (default: 0).
@@ -70,11 +74,30 @@ For multi-speaker models, use `--speaker <number>` to change speakers (default: 
 See `piper --help` for more options.
 
 
+## People using Piper
+
+Piper has been used in the following projects/papers:
+
+* [Home Assistant](https://github.com/home-assistant/addons/blob/master/piper/README.md)
+* [Rhasspy 3](https://github.com/rhasspy/rhasspy3/)
+* [NVDA - NonVisual Desktop Access](https://www.nvaccess.org/post/in-process-8th-may-2023/#voices)
+* [Image Captioning for the Visually Impaired and Blind: A Recipe for Low-Resource Languages](https://www.techrxiv.org/articles/preprint/Image_Captioning_for_the_Visually_Impaired_and_Blind_A_Recipe_for_Low-Resource_Languages/22133894)
+* [Open Voice Operating System](https://github.com/OpenVoiceOS/ovos-tts-plugin-piper)
+
+
 ## Training
 
 See [src/python](src/python)
 
-Start by creating a virtual environment:
+Pretrained checkpoints are available on [Hugging Face](https://huggingface.co/datasets/rhasspy/piper-checkpoints/tree/main)
+
+Start by installing system dependencies:
+
+``` sh
+sudo apt-get install python3-dev
+```
+
+Then create a virtual environment:
 
 ``` sh
 cd piper/src/python
@@ -100,7 +123,7 @@ python3 -m piper_train.preprocess \
   --sample-rate 22050
 ```
 
-Datasets must either be in the [LJSpeech](https://keithito.com/LJ-Speech-Dataset/) format or from [Mimic Recording Studio](https://github.com/MycroftAI/mimic-recording-studio) (`--dataset-format mycroft`).
+Datasets must either be in the [LJSpeech](https://keithito.com/LJ-Speech-Dataset/) format (with only id/text columns or id/speaker/text) or from [Mimic Recording Studio](https://github.com/MycroftAI/mimic-recording-studio) (`--dataset-format mycroft`).
 
 Finally, you can train:
 
